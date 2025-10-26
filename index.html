@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Content Mirror</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+
+    <style>
+        :root {
+            --bg: #f8f9fc;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #6366f1;
+            --muted: #7b7f91;
+            --success: #16a34a;
+            --error: #dc2626;
+            --info: #3b82f6;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --radius: 20px;
+            --transition: 0.3s;
+            --font-heading: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-heading);
+            margin: 0;
+            background: linear-gradient(180deg, #f8f9fc 0%, #f0f2f8 100%);
+            color: #111827;
+            line-height: 1.7;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
+            color: #fff;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        header .mode-tabs {
+            display: flex;
+            gap: 12px;
+        }
+
+        header .mode-tabs button {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 50px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition);
+        }
+
+        header .mode-tabs button.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+            transform: translateY(-1px);
+        }
+
+        main.container {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+
+        .panel-container {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            flex: 1;
+            min-width: 320px;
+            box-shadow: 0 12px 36px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 14px;
+            color: #1f2937;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        input[type=text],
+        input[type=file],
+        .panel {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid #e0e3eb;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: border 0.3s, box-shadow 0.3s;
+            background: #f9fafb;
+        }
+
+        input:focus,
+        .panel:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .panel {
+            min-height: 260px;
+            max-height: 380px;
+            overflow-y: auto;
+            font-size: 14px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .result-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 12px 36px var(--shadow);
+            margin-top: 32px;
+        }
+
+        #resultTabs {
+            display: flex;
+            justify-content: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        #resultTabs button {
+            background: #f3f4f6;
+            color: var(--muted);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        #resultTabs button.active {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+        }
+
+        .footer {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .panel-container {
+                flex-direction: column;
+            }
+
+            .panel {
+                max-height: 280px;
+            }
+        }
+
+        /* Summary Card Wrapper */
+        .summary-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Individual Stat */
+        .summary-stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            background: #fff;
+            flex: 1;
+            min-width: 200px;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .summary-stat:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Icon */
+        .summary-stat span {
+            font-size: 20px;
+        }
+
+        /* Color schemes */
+        .summary-found {
+            border-left: 5px solid #16a34a;
+        }
+
+        .summary-missing {
+            border-left: 5px solid #dc2626;
+        }
+
+        .summary-extra {
+            border-left: 5px solid #6366f1;
+        }
+
+        /* Results Container Styling */
+        #resultsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Result Item */
+        .result-item {
+            padding: 14px 18px;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 6px solid transparent;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item.found {
+            border-left-color: #16a34a;
+        }
+
+        .result-item.missing {
+            border-left-color: #dc2626;
+        }
+
+        .result-item.extra {
+            border-left-color: #6366f1;
+        }
+
+        /* Label Area */
+        .result-label {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            margin-bottom: 4px;
+            opacity: 0.7;
+        }
+
+        /* Tag display */
+        .result-tag {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Content Mirror</h1>
+        <div class="mode-tabs main-tabs">
+            <button class="main-tab active" data-tab="docToWeb">Doc → Webpage</button>
+            <button class="main-tab" data-tab="webToWeb">Webpage → Webpage</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Doc → Webpage Tab -->
+        <section id="docToWeb" class="tab-content active">
+            <div class="panel-container">
+                <div class="card">
+                    <div class="section-title">Document Input</div>
+                    <label>Upload .docx</label>
+                    <input type="file" id="docxInput" accept=".docx" />
+                    <div class="panel" id="docPanel" contenteditable="true" placeholder="Paste doc text here..."></div>
+                    <div class="row" style="gap:12px; margin-top:8px;">
+                        <button class="btn" id="pasteDoc"><i class="bi bi-clipboard"></i>Paste</button>
+                        <button class="btn btn-outline" id="downloadDoc"><i class="bi bi-download"></i>Download</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">Page Input</div>
+                    <label>Page URL</label>
+                    <input type="text" id="pageUrl" placeholder="https://example.com/your-page" />
+                    <div class="panel" id="pagePanel" contenteditable="true"></div>
+                    <div class="row" style="gap:12px; margin-top:8px;">
+                        <button class="btn" id="pastePage"><i class="bi bi-clipboard"></i>Paste</button>
+                        <button class="btn btn-outline" id="downloadPage"><i
+                                class="bi bi-download"></i>Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="display: flex; justify-content:center; gap:12px; margin-top:16px;">
+                <button class="btn" id="fetchAndCompare">Fetch & Compare</button>
+                <button class="btn btn-outline" id="compareLocal">Compare Local</button>
+            </div>
+        </section>
+
+        <!-- Web → Web Tab -->
+        <section id="webToWeb" class="tab-content" style="display:none;">
+            <div class="panel-container">
+                <div class="card">
+                    <div class="section-title">Source Page</div>
+                    <input type="text" id="sourceUrl" placeholder="https://source.com/page" />
+                </div>
+                <div class="card">
+                    <div class="section-title">Target Page</div>
+                    <input type="text" id="targetUrl" placeholder="https://target.com/page" />
+                </div>
+            </div>
+            <div class="row" style="justify-content:center; gap:12px; margin-top:16px;">
+                <button class="btn" id="compareWebToWeb">Compare Pages</button>
+            </div>
+        </section>
+
+        <!-- Summary + Results Container -->
+        <div class="results-wrapper" style="margin-top:32px;">
+
+            <!-- Results Panel -->
+            <div class="result-panel">
+                <!-- Summary Card -->
+                <div id="summaryCard" class="summary-card"
+                    style="display:none; margin-bottom: 24px; display:flex; gap:16px; flex-wrap:wrap;">
+                </div>
+                <!-- Results Items -->
+                <div id="resultsContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer">© 2025 Premium Content Checker Tool</div>
+    </main>
+
+
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
+    <script>
+        /* ----------------- UTILITIES ----------------- */
+        function escapeHtml(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function normalizeText(text) {
+            return String(text || '')
+                .replace(/[“”]/g, '"')
+                .replace(/[‘’‛]/g, "'")
+                .replace(/[\u2010-\u2015]/g, '-')
+                .replace(/\s*-\s*/g, ' - ')
+                .replace(/\u2026/g, '...')
+                .replace(/[\u00A0\u2000-\u200D]/g, ' ')
+                .replace(/\u00AD|\uFEFF|\u200B/g, '')
+                .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+                .replace(/([.?!])([A-Za-z0-9])/g, '$1 $2')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+
+        function splitSentences(text) {
+            const cleaned = String(text || '').replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+            const regex = /(?:[A-Z][^.?!]*\b(?:Dr|Mr|Mrs|Ms|St|e\.g|i\.e|etc)\b[^.?!]*|[^.?!]+)[.?!]?/gi;
+            return (cleaned.match(regex) || []).map(s => s.trim()).filter(Boolean);
+        }
+
+        /* ----------------- DOM refs ----------------- */
+        const docxInput = document.getElementById('docxInput');
+        const pageUrl = document.getElementById('pageUrl');
+        const compareLocal = document.getElementById('compareLocal');
+        const docPanel = document.getElementById('docPanel');
+        const pagePanel = document.getElementById('pagePanel');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const pasteDoc = document.getElementById('pasteDoc');
+        const pastePage = document.getElementById('pastePage');
+        const downloadDoc = document.getElementById('downloadDoc');
+        const downloadPage = document.getElementById('downloadPage');
+        const summaryCard = document.getElementById('summaryCard');
+
+        const proxies = [
+            url => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`,
+            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+        ];
+
+        let docElements = [];
+        let resultsArr = [];
+        let pageHtmlToPreview = '';
+
+        /* ----------------- FETCH THROUGH PROXY ----------------- */
+        async function fetchThroughProxy(url) {
+            resultsContainer.innerHTML = '⏳ Loading...';
+            let lastError;
+            for (let attempt = 0; attempt < 5; attempt++) {
+                for (let proxy of proxies) {
+                    try {
+                        const res = await fetch(proxy(url));
+                        if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+                        return await res.text();
+                    } catch (err) { lastError = err; }
+                }
+            }
+            throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
+        }
+
+        /* ----------------- CLEAN / EXTRACT ----------------- */
+        function getCleanBody(htmlString, opts = {}) {
+            const { topBottomPercent = 0.12, minLengthToApplyHeuristic = 500 } = opts;
+            const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+            const body = doc.body.cloneNode(true);
+            body.querySelectorAll('script, style, noscript, iframe, link, svg, header, footer, nav').forEach(n => n.remove());
+
+            const keywords = ['header', 'footer', 'masthead', 'banner', 'topbar', 'colophon', 'site-header', 'site-footer', 'page-header', 'page-footer', 'ekit', 'elementor-header', 'elementor-footer', 'wp-block-template-part'];
+            const reSafe = new RegExp(keywords.map(k => k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|'), 'i');
+
+            Array.from(body.querySelectorAll('*')).reverse().forEach(el => {
+                const cls = (el.className || '').toLowerCase();
+                const id = (el.id || '').toLowerCase();
+                const role = (el.getAttribute('role') || '').toLowerCase();
+                const attrs = [el.getAttribute('aria-label') || '',
+                el.getAttribute('title') || '',
+                el.getAttribute('alt') || '',
+                el.getAttribute('placeholder') || ''].join(' ').toLowerCase();
+                const combined = `${cls} ${id} ${role} ${attrs}`;
+                if (/header|footer/i.test(cls + id) || reSafe.test(combined)) el.remove();
+            });
+
+            const textNodes = [];
+            const walker = doc.createTreeWalker(body, NodeFilter.SHOW_TEXT, {
+                acceptNode: n => n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+            });
+            let n;
+            while ((n = walker.nextNode())) textNodes.push(n);
+
+            if (textNodes.length >= minLengthToApplyHeuristic) {
+                const cutoff = Math.max(1, Math.floor(textNodes.length * topBottomPercent));
+                function removeAncestor(node) {
+                    let anc = node.parentElement;
+                    while (anc && anc !== body) {
+                        if (/(article|section|main|div)/i.test(anc.tagName)) { anc.remove(); return; }
+                        anc = anc.parentElement;
+                    }
+                }
+                textNodes.slice(0, cutoff).forEach(removeAncestor);
+                textNodes.slice(-cutoff).forEach(removeAncestor);
+            }
+
+            return body.innerHTML;
+        }
+
+        function extractAllTextElements(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            doc.querySelectorAll('script,style,noscript,iframe,header,footer,nav').forEach(n => n.remove());
+            const builderSelectors = ['.elementor-widget-text-editor', '.wpb_text_column', '.et_pb_text', '.bricks-text', '.text-block'];
+            const elements = [];
+            function traverse(node) {
+                if (node.nodeType !== Node.ELEMENT_NODE) return;
+                const tag = node.tagName.toLowerCase();
+                if (/div|section|main|article/i.test(tag) && /header|footer/i.test(node.className + node.id)) return;
+
+                if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(tag)) {
+                    const text = node.textContent.trim();
+                    if (text) elements.push({ tag, text });
+                } else if (builderSelectors.some(sel => node.matches(sel))) {
+                    const text = node.textContent.replace(/\s+/g, ' ').trim();
+                    if (text) elements.push({ tag: 'div', text });
+                }
+                node.childNodes.forEach(traverse);
+            }
+            traverse(doc.body);
+            return elements;
+        }
+
+        /* ----------------- COMPARISON ----------------- */
+        function runComparisonHelper(sourceElems, targetElems, isWebComparison = false) {
+            resultsArr = [];
+            let foundCount = 0;
+
+            const srcSentences = [];
+            sourceElems.forEach(el => splitSentences(el.text).forEach(s => {
+                const norm = normalizeText(s);
+                if (norm) srcSentences.push({ tag: el.tag, text: s, norm });
+            }));
+
+            const tgtSentences = [];
+            targetElems.forEach(el => splitSentences(el.text).forEach(s => {
+                const norm = normalizeText(s);
+                if (norm) tgtSentences.push({ tag: el.tag, text: s, norm, matched: false });
+            }));
+
+            srcSentences.forEach(src => {
+                let matchedIndex = tgtSentences.findIndex(t => t.norm === src.norm && !t.matched);
+                if (matchedIndex === -1) {
+                    const sClean = src.norm.replace(/\s|-/g, '');
+                    matchedIndex = tgtSentences.findIndex(t => t.norm.replace(/\s|-/g, '') === sClean && !t.matched);
+                }
+                const isFound = matchedIndex !== -1;
+                if (isFound) { tgtSentences[matchedIndex].matched = true; foundCount++; }
+
+                resultsArr.push({ type: isFound ? 'found' : 'missing', tag: src.tag, sentence: src.text, norm: src.norm, reason: isFound ? null : (isWebComparison ? 'Not found in second page' : 'Not found on page') });
+            });
+
+            const matchedNorms = new Set(resultsArr.filter(r => r.type === 'found').map(r => r.norm));
+            tgtSentences.forEach(t => {
+                if (!matchedNorms.has(t.norm)) {
+                    resultsArr.push({ type: 'extra', tag: t.tag, sentence: t.text, norm: t.norm, found: false, reason: isWebComparison ? 'Extra on second page' : 'Extra on page' });
+                }
+            });
+
+            return resultsArr;
+        }
+
+        /* ----------------- RENDER RESULTS ----------------- */
+        function renderResults() {
+            const missingArr = resultsArr.filter(r => r.type === 'missing');
+            const extraArr = resultsArr.filter(r => r.type === 'extra');
+            const foundArr = resultsArr.filter(r => r.type === 'found');
+            const ordered = [...missingArr, ...extraArr, ...foundArr];
+
+            resultsContainer.innerHTML = '';
+            if (!ordered.length) {
+                resultsContainer.innerHTML = '<div class="result-item" style="padding:18px;border-radius:10px;background:#fff;">No results to show.</div>';
+                summaryCard.style.display = 'none';
+                return;
+            }
+
+            ordered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `result-item ${item.type}`;
+                div.innerHTML = `
+            <div class="result-label">${item.type.toUpperCase()} <span class="result-tag">| &lt;${item.tag}&gt;</span></div>
+            <div class="result-text">${escapeHtml(item.sentence)}</div>
+            ${item.reason ? `<div style="margin-top:8px;color:${item.type === 'missing' ? '#dc2626' : item.type === 'extra' ? '#2563eb' : '#16a34a'}">${escapeHtml(item.reason)}</div>` : ''}
+        `;
+                resultsContainer.appendChild(div);
+            });
+
+            renderSummaryCard();
+        }
+
+        /* ----------------- SUMMARY CARD ----------------- */
+        function renderSummaryCard() {
+            const missingCount = resultsArr.filter(r => r.type === 'missing').length;
+            const extraCount = resultsArr.filter(r => r.type === 'extra').length;
+            const foundCount = resultsArr.filter(r => r.type === 'found').length;
+
+            summaryCard.innerHTML = `
+        <div class="summary-stat summary-missing" data-type="missing"><span>❌</span><div><strong>${missingCount}</strong> Missing</div></div>
+        <div class="summary-stat summary-extra" data-type="extra"><span>ℹ️</span><div><strong>${extraCount}</strong> Extra</div></div>
+        <div class="summary-stat summary-found" data-type="found"><span>✅</span><div><strong>${foundCount}</strong> Found</div></div>
+    `;
+            summaryCard.style.display = 'flex';
+        }
+
+        /* ----------------- FILTER ----------------- */
+        function filterResults(type) {
+            const valid = ['missing', 'extra', 'found'];
+            if (!valid.includes(type)) return;
+            document.querySelectorAll('#summaryCard .summary-stat').forEach(s => s.classList.toggle('active-stat', s.dataset.type === type));
+
+            const items = resultsArr.filter(r => r.type === type);
+            resultsContainer.innerHTML = '';
+
+            if (!items.length) {
+                const empty = document.createElement('div');
+                empty.className = 'result-item';
+                empty.style.background = '#fff8f8';
+                empty.style.borderLeft = type === 'missing' ? '6px solid #dc2626' : type === 'extra' ? '6px solid #6366f1' : '6px solid #16a34a';
+                empty.style.color = '#374151';
+                empty.style.padding = '20px';
+                empty.style.borderRadius = '10px';
+                empty.innerHTML = `<div style="font-weight:600;margin-bottom:6px;text-transform:uppercase">${type}</div><div>No ${type} items found.</div>`;
+                resultsContainer.appendChild(empty);
+            } else {
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = `result-item ${item.type}`;
+                    div.innerHTML = `
+                <div class="result-label">${item.type.toUpperCase()} <span class="result-tag">| &lt;${item.tag}&gt;</span></div>
+                <div class="result-text">${escapeHtml(item.sentence)}</div>
+                ${item.reason ? `<div style="margin-top:8px;color:${item.type === 'missing' ? '#dc2626' : item.type === 'extra' ? '#2563eb' : '#16a34a'}">${escapeHtml(item.reason)}</div>` : ''}
+            `;
+                    resultsContainer.appendChild(div);
+                });
+            }
+        }
+
+        /* ----------------- AUTO SELECT ----------------- */
+        function autoSelectDefaultCategory() {
+            if (resultsArr.some(r => r.type === 'missing')) filterResults('missing');
+            else if (resultsArr.some(r => r.type === 'extra')) filterResults('extra');
+            else if (resultsArr.some(r => r.type === 'found')) filterResults('found');
+            else { resultsContainer.innerHTML = ''; summaryCard.style.display = 'none'; }
+        }
+
+        /* ----------------- ACTIVE-STAT STYLE ----------------- */
+        (function addActiveStatStyleIfMissing() {
+            const rule = `.summary-stat.active-stat{box-shadow:0 10px 30px rgba(99,102,241,0.18);transform:translateY(-6px);}`;
+            if (!document.getElementById('activeStatStyle')) {
+                const s = document.createElement('style');
+                s.id = 'activeStatStyle'; s.innerHTML = rule; document.head.appendChild(s);
+            }
+        })();
+
+        /* ----------------- DOCX INPUT ----------------- */
+        docxInput.addEventListener('change', async e => {
+            const f = e.target.files[0];
+            if (!f) return;
+            try {
+                const ab = await f.arrayBuffer();
+                const res = await mammoth.convertToHtml({
+                    arrayBuffer: ab, styleMap: [
+                        "p[style-name='Heading 1'] => h1:fresh",
+                        "p[style-name='Heading 2'] => h2:fresh",
+                        "p[style-name='Heading 3'] => h3:fresh"
+                    ]
+                });
+                const container = document.createElement('div');
+                container.innerHTML = res.value;
+                docElements = [];
+                container.querySelectorAll('h1,h2,h3,p').forEach(el => {
+                    if (el.innerText.trim()) docElements.push({ tag: el.tagName.toLowerCase(), text: el.innerText.trim() });
+                });
+                docPanel.innerHTML = container.innerHTML;
+            } catch (err) { alert('Could not read .docx: ' + err.message); }
+        });
+
+        /* ----------------- AUTO FETCH ON URL INPUT ----------------- */
+        function debounce(fn, delay = 600) {
+            let timer;
+            return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+        }
+
+        pageUrl.addEventListener('input', debounce(async () => {
+            const url = pageUrl.value.trim();
+            if (!url) return;
+            if (!docElements.length) return; // require DOCX first
+            resultsContainer.innerHTML = '⏳ Fetching page...';
+            try {
+                const html = await fetchThroughProxy(url);
+                const clean = getCleanBody(html);
+                pageHtmlToPreview = clean;
+                pagePanel.innerHTML = clean; // optional: show preview
+                const pageElems = extractAllTextElements(pageHtmlToPreview);
+                runComparisonHelper(docElements, pageElems, true);
+                renderResults();
+                autoSelectDefaultCategory();
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (err) {
+                resultsContainer.innerHTML = `<span style="color:red;">❌ ${escapeHtml(err.message)}</span>`;
+            }
+        }, 800));
+
+        /* ----------------- COMPARE LOCAL ----------------- */
+        compareLocal.addEventListener('click', () => {
+            if (!docElements.length) return alert('Load the .docx content first.');
+            if (!pagePanel.textContent.trim()) return alert('Paste the page HTML/text first.');
+            const pageElems = extractAllTextElements(pagePanel.innerHTML);
+            runComparisonHelper(docElements, pageElems);
+            renderResults();
+            autoSelectDefaultCategory();
+        });
+
+        /* ----------------- CLIPBOARD ----------------- */
+        pasteDoc.addEventListener('click', async () => { try { docPanel.textContent = await navigator.clipboard.readText(); } catch { alert('Unable to read clipboard.'); } });
+        pastePage.addEventListener('click', async () => { try { pagePanel.textContent = await navigator.clipboard.readText(); } catch { alert('Unable to read clipboard.'); } });
+
+        /* ----------------- DOWNLOAD ----------------- */
+        downloadDoc.addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([docPanel.textContent || ''], { type: 'text/plain' }));
+            a.download = 'doc-text.txt'; a.click();
+        });
+        downloadPage.addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([pagePanel.textContent || ''], { type: 'text/plain' }));
+            a.download = 'page-text.txt'; a.click();
+        });
+
+        /* ----------------- SUMMARY CLICK ----------------- */
+        summaryCard.addEventListener('click', e => {
+            const stat = e.target.closest('.summary-stat');
+            if (!stat || !summaryCard.contains(stat)) return;
+            const type = stat.dataset.type;
+            if (type) filterResults(type);
+        });
+
+        // ----------------- AUTO-FETCH Web→Web -----------------
+        const sourceUrlInput = document.getElementById('sourceUrl');
+        const targetUrlInput = document.getElementById('targetUrl');
+
+        async function autoCompareWebToWeb() {
+            const url1 = sourceUrlInput.value.trim();
+            const url2 = targetUrlInput.value.trim();
+
+            if (!url1 || !url2) return; // do nothing if any input empty
+
+            resultsContainer.innerHTML = '⏳ Fetching pages...';
+            try {
+                const [html1, html2] = await Promise.all([
+                    fetchThroughProxy(url1),
+                    fetchThroughProxy(url2)
+                ]);
+
+                const elems1 = extractAllTextElements(getCleanBody(html1));
+                const elems2 = extractAllTextElements(getCleanBody(html2));
+
+                resultsArr = runComparisonHelper(elems1, elems2, true);
+                renderResults();
+                autoSelectDefaultCategory();
+
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (err) {
+                resultsContainer.innerHTML = `<span style="color:red;">❌ ${escapeHtml(err.message)}</span>`;
+            }
+        }
+
+        // Listen for changes and debounce
+        let webToWebTimeout;
+        [sourceUrlInput, targetUrlInput].forEach(input => {
+            input.addEventListener('input', () => {
+                clearTimeout(webToWebTimeout);
+                webToWebTimeout = setTimeout(autoCompareWebToWeb, 800); // 0.8s after typing stops
+            });
+        });
+
+        // Tab switching
+        document.querySelectorAll('.main-tab').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+
+                // Show the selected tab
+                const tab = document.getElementById(btn.dataset.tab);
+                tab.style.display = 'block';
+
+                // Clear previous results and summary
+                resultsContainer.innerHTML = '';
+                summaryCard.style.display = 'none';
+
+                // Auto-fetch for Doc → Web
+                if (btn.dataset.tab === 'docToWeb') {
+                    const url = document.getElementById('pageUrl').value.trim();
+                    if (url && docElements.length) {
+                        resultsContainer.innerHTML = '⏳ Fetching page...';
+                        try {
+                            const html = await fetchThroughProxy(url);
+                            const pageElems = extractAllTextElements(getCleanBody(html));
+                            runComparisonHelper(docElements, pageElems, true);
+                            renderResults();
+                            autoSelectDefaultCategory();
+                        } catch (err) {
+                            resultsContainer.innerHTML = `<span style="color:red;">❌ ${escapeHtml(err.message)}</span>`;
+                        }
+                    }
+                }
+
+                // Auto-fetch for Web → Web
+                if (btn.dataset.tab === 'webToWeb') {
+                    const url1 = document.getElementById('sourceUrl').value.trim();
+                    const url2 = document.getElementById('targetUrl').value.trim();
+                    if (url1 && url2) {
+                        resultsContainer.innerHTML = '⏳ Fetching pages...';
+                        try {
+                            const [html1, html2] = await Promise.all([
+                                fetchThroughProxy(url1),
+                                fetchThroughProxy(url2)
+                            ]);
+                            const elems1 = extractAllTextElements(getCleanBody(html1));
+                            const elems2 = extractAllTextElements(getCleanBody(html2));
+                            resultsArr = runComparisonHelper(elems1, elems2, true);
+                            renderResults();
+                            autoSelectDefaultCategory();
+                        } catch (err) {
+                            resultsContainer.innerHTML = `<span style="color:red;">❌ ${escapeHtml(err.message)}</span>`;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Result filter tabs
+        const resultButtons = document.querySelectorAll('#resultTabs button');
+        resultButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                resultButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                document.querySelectorAll('.result-item').forEach(item => {
+                    item.style.display = filter === 'all' || item.classList.contains(filter) ? 'block' : 'none';
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
